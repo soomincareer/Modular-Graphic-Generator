@@ -26,6 +26,75 @@ python web_app.py
 
 서버가 시작되면 브라우저에서 `http://127.0.0.1:5000` 으로 접속하세요.
 
+## ☁️ 컴퓨터를 켜두지 않고 배포하는 방법
+
+로컬 PC를 하루 종일 켜둘 수 없다면, 아래처럼 **클라우드 서버에 상시 실행**하는 방식이 가장 현실적입니다.
+
+### 1) Flask 앱을 GitHub 저장소에서 바로 배포 (Render 권장)
+
+아래 순서대로 진행하면, 로컬 PC를 꺼도 웹사이트는 계속 동작합니다.
+
+#### 1-1. GitHub 준비
+
+1. GitHub에서 새 저장소를 만듭니다.
+2. 현재 프로젝트를 푸시합니다.
+
+```bash
+git init
+git add .
+git commit -m "initial commit"
+git branch -M main
+git remote add origin https://github.com/<YOUR_ID>/<YOUR_REPO>.git
+git push -u origin main
+```
+
+#### 1-2. Render에서 바로 배포
+
+1. [Render](https://render.com) 로그인
+2. **New + → Web Service** 클릭
+3. GitHub 계정 연동 후 저장소 선택
+4. 아래 값 입력
+   - Runtime: `Python 3`
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `gunicorn web_app:app --bind 0.0.0.0:$PORT`
+5. **Create Web Service** 클릭
+6. 배포 완료 후 발급 URL 접속
+
+#### 1-3. 저장소에 이미 포함된 배포 파일
+
+- `requirements.txt`: 배포 시 설치할 Python 패키지 목록
+- `Procfile`: PaaS 공통 시작 명령
+- `render.yaml`: Render Blueprint 설정 파일
+
+> 참고: Render 무료 플랜은 일정 시간 트래픽이 없으면 sleep 될 수 있습니다. 항상 켜진 상태가 필요하면 유료 플랜을 사용하세요.
+
+### 2) VPS (EC2, Lightsail, Oracle Cloud 등)
+
+`Nginx + Gunicorn + Flask` 조합으로 운영합니다.
+
+장점:
+
+- 자유도 높음 (파일 크기, 프로세스 개수, 디스크 정책)
+
+단점:
+
+- 서버 운영(보안 업데이트, 방화벽, SSL) 직접 관리 필요
+
+### 3) Docker 기반 배포
+
+Docker 이미지를 만들어 어디서든 동일하게 실행할 수 있습니다.
+
+권장 시나리오:
+
+- 개인 서버/클라우드/VPS로 이동 가능성이 큰 경우
+- 추후 작업 큐(Celery)나 외부 스토리지(S3) 연동 계획이 있는 경우
+
+### 운영 시 꼭 고려할 점
+
+- 현재 앱은 임시 폴더에 결과물을 저장하므로 서버 재시작 시 파일이 유실될 수 있습니다.
+- 장기 운영 시에는 S3 같은 외부 스토리지 사용을 권장합니다.
+- 업로드 제한(`MAX_CONTENT_LENGTH=500MB`)이 크므로, 호스팅 플랜의 디스크/메모리 제한을 확인하세요.
+
 ## 사용 방법
 
 1. **모듈 이미지 업로드**
